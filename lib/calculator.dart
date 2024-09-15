@@ -86,9 +86,9 @@ class _CalculatorState extends State<Calculator> {
             Expanded(child: Divider()),
             Column(children: [
               Row(children: [
-                _buildButton("7"),
-                _buildButton("8"),
-                _buildButton("9"),
+                _buildButton("1"),
+                _buildButton("2"),
+                _buildButton("3"),
                 _buildButton("÷")
               ]),
               Row(children: [
@@ -98,9 +98,9 @@ class _CalculatorState extends State<Calculator> {
                 _buildButton("×")
               ]),
               Row(children: [
-                _buildButton("1"),
-                _buildButton("2"),
-                _buildButton("3"),
+                _buildButton("7"),
+                _buildButton("8"),
+                _buildButton("9"),
                 _buildButton("-")
               ]),
               Row(children: [
