@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:expressions/expressions.dart';
 
 void main() => runApp(const CalculatorApp());
 
@@ -17,7 +18,8 @@ class CalculatorApp extends StatelessWidget {
         ),
         outlinedButtonTheme: OutlinedButtonThemeData(
           style: OutlinedButton.styleFrom(
-            foregroundColor: Colors.white, backgroundColor: Colors.blueGrey,
+            foregroundColor: Colors.white,
+            backgroundColor: Colors.blueGrey,
             side: BorderSide(color: Colors.grey[800]!, width: 1),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(0),
@@ -38,67 +40,85 @@ class Calculator extends StatefulWidget {
 class _CalculatorState extends State<Calculator> {
   String _output = "0";
   String _currentInput = "";
-  double _num1 = 0;
-  String _operand = "";
+  List<String> _expression = [];
 
   void _buttonPressed(String buttonText) {
     setState(() {
       if (buttonText == "C") {
-        _output = "0";
+        _expression.clear();
         _currentInput = "";
-        _num1 = 0;
-        _operand = "";
+        _output = "0";
       } else if (buttonText == "⌫") {
         if (_currentInput.isNotEmpty) {
           _currentInput = _currentInput.substring(0, _currentInput.length - 1);
-          _output = _currentInput.isEmpty ? "0" : _currentInput;
+          if (_currentInput.isEmpty) {
+            if (_expression.isNotEmpty) {
+              _expression.removeLast();
+            }
+          }
+          _updateOutput();
         }
       } else if (buttonText == "+" ||
           buttonText == "-" ||
           buttonText == "×" ||
           buttonText == "÷") {
         if (_currentInput.isNotEmpty) {
-          _num1 = double.parse(_currentInput);
-          _operand = buttonText;
+          _expression.add(_currentInput);
+          _expression.add(buttonText);
           _currentInput = "";
-          _output = _num1.toString() + " " + _operand;
+          _updateOutput();
         }
       } else if (buttonText == "=") {
-        if (_currentInput.isNotEmpty && _operand.isNotEmpty) {
-          double num2 = double.parse(_currentInput);
-          switch (_operand) {
-            case "+":
-              _output = (_num1 + num2).toString();
-              break;
-            case "-":
-              _output = (_num1 - num2).toString();
-              break;
-            case "×":
-              _output = (_num1 * num2).toString();
-              break;
-            case "÷":
-              _output = (_num1 / num2).toString();
-              break;
-          }
-          _num1 = double.parse(_output);
-          _operand = "";
+        if (_currentInput.isNotEmpty) {
+          _expression.add(_currentInput);
           _currentInput = "";
+          try {
+            _output = _calculateExpression(_expression).toString();
+          } catch (e) {
+            _output = "Error";
+          }
+          _expression.clear();
+          _expression.add(_output);
         }
       } else {
         _currentInput += buttonText;
-        _output = _currentInput;
+        _updateOutput();
       }
     });
+  }
+
+  void _updateOutput() {
+    String expression = _expression.join(" ");
+    if (_currentInput.isNotEmpty) {
+      expression += " $_currentInput";
+    }
+    _output = expression.isEmpty ? "0" : expression;
+  }
+
+  double _calculateExpression(List<String> expression) {
+    String exp = expression.join(" ");
+    exp = exp.replaceAll("×", "*").replaceAll("÷", "/");
+
+    final expressionToEvaluate = Expression.parse(exp);
+    final evaluator = const ExpressionEvaluator();
+
+    try {
+      final result = evaluator.eval(expressionToEvaluate, {});
+      return result.toDouble();
+    } catch (e) {
+      throw Exception('Invalid expression');
+    }
   }
 
   Widget _buildButton(String buttonText, {Color? color}) {
     return Expanded(
       child: Container(
-        height: 80, 
+        height: 80,
         margin: EdgeInsets.all(1),
         child: OutlinedButton(
           style: OutlinedButton.styleFrom(
-            foregroundColor: Colors.white, backgroundColor: color ?? Colors.grey[900],
+            foregroundColor: Colors.white,
+            backgroundColor: color ?? Colors.grey[900],
             padding: EdgeInsets.all(20),
           ),
           onPressed: () => _buttonPressed(buttonText),
